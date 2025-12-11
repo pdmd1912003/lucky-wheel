@@ -15,7 +15,6 @@ export default function WinnersDisplay() {
           <p className="text-sm text-slate-400 mt-1">{winners.length} victors claimed</p>
         </div>
 
-        {/* Winners list */}
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {winners.length === 0 ? (
             <div className="text-center py-12">
@@ -31,13 +30,11 @@ export default function WinnersDisplay() {
                   #{idx + 1}
                 </div>
 
-                {/* Winner info */}
                 <div className="pr-8">
                   <p className="font-semibold text-white group-hover:text-cyan-400 transition">{winner.name}</p>
                   <p className="text-sm text-purple-300 mt-1">{winner.prize}</p>
                 </div>
 
-                {/* Glow effect on hover */}
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-cyan-500/5 group-hover:via-purple-500/10 group-hover:to-cyan-500/5 pointer-events-none transition"></div>
               </div>
             ))

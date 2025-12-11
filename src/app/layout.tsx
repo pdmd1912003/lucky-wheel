@@ -1,14 +1,16 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Space_Grotesk, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
+const _geist = Geist({ subsets: ["latin"] })
+const _geistMono = Geist_Mono({ subsets: ["latin"] })
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "600", "700"] })
 const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "600"] })
 
 export const metadata: Metadata = {
-  title: "Spin Legends - Web3 Lucky Draw",
+  title: "HUSC CODECAMP - Lucky Draw",
   description: "Modern Web3 Lucky Wheel with cyberpunk aesthetics",
   generator: "v0.app",
   icons: {

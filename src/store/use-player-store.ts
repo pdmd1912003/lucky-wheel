@@ -1,61 +1,107 @@
 import { create } from "zustand"
 
-export type PrizeItem = {
+export interface Player {
+  id: string
+  name: string
+  studentId: string
+  rawData: Record<string, any>
+  prize: string
+}
+
+export interface Prize {
   id: string
   name: string
   image: string
-  used?: boolean
+  quantity: number
+  totalQuantity: number
 }
 
-export type Player = {
+export interface Winner {
   id: string
   name: string
-  studentId?: string
-  prize?: string
-  rawData?: Record<string, any>
+  studentId: string
+  rawData: Record<string, any>
+  prize: string
 }
 
-type PlayerStore = {
+interface PlayerStore {
   players: Player[]
-  winners: Player[]
-  prizes: PrizeItem[]
+  prizes: Prize[]
+  winners: Winner[]
 
   setPlayers: (players: Player[]) => void
-  addPrize: (name: string, image: string) => void
-  markPrizeUsed: (id: string) => void
-
-  addWinner: (player: Player, prize: string) => void
+  addPlayer: (name: string, studentId?: string) => void
+  removePlayer: (id: string) => void
+  addPrize: (name: string, image: string, quantity: number) => void
+  decreasePrizeQuantity: (id: string) => void
+  addWinner: (player: Player, prizeName: string) => void
   clearWinners: () => void
-
-  updatePrize: (id: string, prize: string) => void
+  getRandomPrize: () => Prize | null
 }
 
-export const usePlayerStore = create<PlayerStore>((set) => ({
+export const usePlayerStore = create<PlayerStore>((set, get) => ({
   players: [],
-  winners: [],
   prizes: [],
+  winners: [],
 
   setPlayers: (players) => set({ players }),
 
-  addPrize: (name, image) =>
+  addPlayer: (name, studentId) => {
+    const newPlayer: Player = {
+      id: Date.now().toString(),
+      name: studentId ? `${name} (${studentId})` : name,
+      studentId: studentId || "",
+      rawData: {},
+      prize: "",
+    }
     set((state) => ({
-      prizes: [...state.prizes, { id: Date.now().toString(), name, image, used: false }],
-    })),
+      players: [...state.players, newPlayer],
+    }))
+  },
 
-  markPrizeUsed: (id) =>
+  removePlayer: (id) => {
     set((state) => ({
-      prizes: state.prizes.map((p) => (p.id === id ? { ...p, used: true } : p)),
-    })),
+      players: state.players.filter((p) => p.id !== id),
+    }))
+  },
 
-  addWinner: (player, prize) =>
+  addPrize: (name, image, quantity) => {
+    const newPrize: Prize = {
+      id: Date.now().toString(),
+      name,
+      image,
+      quantity,
+      totalQuantity: quantity,
+    }
     set((state) => ({
-      winners: [...state.winners, { ...player, prize }],
-    })),
+      prizes: [...state.prizes, newPrize],
+    }))
+  },
+
+  decreasePrizeQuantity: (id) => {
+    set((state) => ({
+      prizes: state.prizes
+        .map((p) => (p.id === id && p.quantity > 0 ? { ...p, quantity: p.quantity - 1 } : p))
+        .filter((p) => p.quantity > 0 || p.id !== id),
+    }))
+  },
+
+  addWinner: (player, prizeName) => {
+    const newWinner: Winner = {
+      ...player,
+      prize: prizeName,
+    }
+    set((state) => ({
+      winners: [...state.winners, newWinner],
+    }))
+  },
 
   clearWinners: () => set({ winners: [] }),
 
-  updatePrize: (id, prize) =>
-    set((state) => ({
-      players: state.players.map((p) => (p.id === id ? { ...p, prize } : p)),
-    })),
+  getRandomPrize: () => {
+    const { prizes } = get()
+    const availablePrizes = prizes.filter((p) => p.quantity > 0)
+    if (availablePrizes.length === 0) return null
+    return availablePrizes[Math.floor(Math.random() * availablePrizes.length)]
+  },
 }))
