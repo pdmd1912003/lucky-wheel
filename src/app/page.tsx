@@ -6,19 +6,12 @@ import PrizesShowcase from "@/components/prizes-showcase"
 import ControlPanel from "@/components/control-panel"
 
 export default function Home() {
-  const { players, prizes, addWinner, removePlayer } = usePlayerStore()
-  const prizeNames = prizes.map((p) => p.name)
+  const { players, prizes } = usePlayerStore()
 
   const handleWinnerSelected = (winner: string) => {
-    if (winner && prizeNames.length > 0) {
-      const randomPrize = prizeNames[Math.floor(Math.random() * prizeNames.length)]
-      const playerObj = players.find((p) => p.name === winner)
-      if (playerObj) {
-        addWinner(playerObj, randomPrize)
-        // Remove winner from players list
-        removePlayer(playerObj.id)
-      }
-    }
+    // Logic is handled in lucky-wheel.tsx component
+    // This callback is just for any additional actions after winner is selected
+    console.log("Winner selected:", winner)
   }
 
   return (
@@ -31,19 +24,19 @@ export default function Home() {
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-12 text-center">
           <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent mb-2 tracking-tighter">
-            LUCKY SPIN
+            HAPPY WHEEL
           </h1>
-          <p className="text-slate-300 text-lg">Cyberpunk Raffle Protocol v1.0</p>
+          <p className="text-slate-300 text-lg">Spin to Win! 🚀</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Left Panel */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-slate-900/50 border border-purple-500/30 rounded-lg p-6 backdrop-blur-sm">
+          <div className="lg:col-span-1 space-y-4">
+            <div className="bg-slate-900/50 border border-purple-500/30 rounded-lg p-4 backdrop-blur-sm">
               <PrizesShowcase />
             </div>
 
-            <div className="bg-slate-900/50 border border-purple-500/30 rounded-lg p-6 backdrop-blur-sm">
+            <div className="bg-slate-900/50 border border-purple-500/30 rounded-lg p-4 backdrop-blur-sm">
               <WinnersDisplay />
             </div>
           </div>
@@ -51,7 +44,7 @@ export default function Home() {
           {/* Center Panel - Wheel */}
           <div className="lg:col-span-1 flex flex-col items-center justify-center">
             <div className="w-full flex justify-center">
-              <div className="bg-slate-900/30 border border-cyan-500/20 rounded-lg p-8 backdrop-blur-sm w-full max-w-lg">
+              <div className="bg-slate-900/30 border border-cyan-500/20 rounded-lg p-6 backdrop-blur-sm w-full">
                 <LuckyWheel segments={players.map((p) => p.name)} onFinished={handleWinnerSelected} />
               </div>
             </div>
@@ -59,7 +52,7 @@ export default function Home() {
 
           {/* Right Panel - Stats */}
           <div className="lg:col-span-1">
-            <div className="bg-slate-900/50 border border-purple-500/30 rounded-lg p-6 backdrop-blur-sm sticky top-8">
+            <div className="bg-slate-900/50 border border-purple-500/30 rounded-lg p-4 backdrop-blur-sm sticky top-8">
               <h3 className="text-xl font-bold text-cyan-400 mb-6 uppercase tracking-wider">System Status</h3>
 
               <div className="space-y-4">

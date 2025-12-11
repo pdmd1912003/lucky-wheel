@@ -18,36 +18,30 @@ export default function PrizesShowcase() {
           <p className="text-sm text-slate-400 mt-1">{prizes.reduce((sum, p) => sum + p.quantity, 0)} remaining</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+        <div className="space-y-2 max-h-96 overflow-y-auto">
           {prizes.map((prize) => (
             <div
               key={prize.id}
-              className={`relative group rounded-lg border overflow-hidden transition duration-300 ${
+              className={`relative group rounded-lg border p-3 transition duration-300 ${
                 prize.quantity === 0
                   ? "border-slate-700/50 opacity-50 bg-slate-900/30"
                   : "border-cyan-500/40 bg-gradient-to-br from-slate-800 to-slate-800 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/20"
               }`}
             >
-              <div className="relative h-24 overflow-hidden bg-slate-900">
-                <img
-                  src={prize.image || "/placeholder.svg"}
-                  alt={prize.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
-                />
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-white truncate group-hover:text-cyan-400 transition">
+                    {prize.name}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {prize.quantity}/{prize.totalQuantity} remaining
+                  </p>
+                </div>
                 {prize.quantity === 0 && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <Check className="text-cyan-400" size={24} />
+                  <div className="flex-shrink-0 ml-2">
+                    <Check className="text-cyan-400" size={20} />
                   </div>
                 )}
-              </div>
-
-              <div className="p-2 bg-slate-800/50 backdrop-blur-sm">
-                <p className="text-xs font-semibold text-white truncate group-hover:text-cyan-400 transition">
-                  {prize.name}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  {prize.quantity}/{prize.totalQuantity} remaining
-                </p>
               </div>
             </div>
           ))}

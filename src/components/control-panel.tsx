@@ -14,7 +14,6 @@ export default function ControlPanel() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState<"participants" | "prizes" | "import" | "stats">("participants")
   const [prizeName, setPrizeName] = useState("")
-  const [prizeImage, setPrizeImage] = useState("")
   const [prizeQuantity, setPrizeQuantity] = useState("1")
   const [playerName, setPlayerName] = useState("")
   const [playerStudentId, setPlayerStudentId] = useState("")
@@ -55,15 +54,19 @@ export default function ControlPanel() {
       const data = utils.sheet_to_json(ws) as Record<string, any>[]
 
       const importedPlayers = data.map((row, index) => {
-        const name = row.name?.toString().trim()
+        // Support multiple column name formats
+        const name = (row["Họ và tên"] || row["name"] || row["Name"] || "").toString().trim()
+        const email = (row["Email"] || row["email"] || "").toString().trim()
+        const spit = row["Thành viên SPIT"] || row["SPIT"] || ""
+        const note = row["Note"] || row["note"] || ""
         let studentId = ""
 
-        if (row.email) {
-          const match = row.email
-            .toString()
-            .trim()
-            .match(/^(\d+t\d+)@/)
-          if (match) studentId = match[1]
+        // Extract student ID from email (e.g., 2411020466@husct.edu.vn -> 2411020466)
+        if (email) {
+          const match = email.match(/^(\d+)@/)
+          if (match) {
+            studentId = match[1]
+          }
         }
 
         const displayName = studentId ? `${name} (${studentId})` : name
@@ -72,7 +75,13 @@ export default function ControlPanel() {
           id: Date.now().toString() + index,
           name: displayName,
           studentId,
-          rawData: row,
+          rawData: {
+            "STT": row["STT"] || index + 1,
+            "Họ và tên": name,
+            "Email": email,
+            "Thành viên SPIT": spit,
+            "Note": note,
+          },
           prize: "",
         }
       })
@@ -103,20 +112,45 @@ export default function ControlPanel() {
       return
     }
 
-    const first = winners[0]
-    const cols = first.rawData ? Object.keys(first.rawData) : ["name"]
-    const headers = [...cols, "Prize"]
+    // Export with exact format: STT, Họ và tên, Email, Thành viên SPIT, Note, Giải thưởng
+    const headers = ["STT", "Họ và tên", "Email", "Thành viên SPIT", "Note", "Giải thưởng"]
 
-    const rows = winners.map((w) => {
-      const row = cols.map((c) => w.rawData?.[c] ?? "")
-      row.push(w.prize || "")
-      return row
+    const rows = winners.map((w, index) => {
+      const rawData = w.rawData || {}
+      return [
+        index + 1, // STT
+        rawData["Họ và tên"] || w.name.replace(/\s*\([^)]*\)\s*$/, ""), // Họ và tên (remove studentId in parentheses)
+        rawData["Email"] || "", // Email
+        rawData["Thành viên SPIT"] || "", // Thành viên SPIT
+        rawData["Note"] || "", // Note
+        w.prize || "", // Giải thưởng
+      ]
     })
 
     const ws = utils.aoa_to_sheet([headers, ...rows])
+    
+    // Set column widths for better readability
+    ws["!cols"] = [
+      { wch: 5 },  // STT
+      { wch: 25 }, // Họ và tên
+      { wch: 30 }, // Email
+      { wch: 15 }, // Thành viên SPIT
+      { wch: 20 }, // Note
+      { wch: 25 }, // Giải thưởng
+    ]
+
     const wb = utils.book_new()
-    utils.book_append_sheet(wb, ws, "Winners")
-    writeFile(wb, "Winners_Results.xlsx")
+    utils.book_append_sheet(wb, ws, "Kết quả")
+    writeFile(wb, "Ket_Qua_Quay_Thuong.xlsx")
+
+    showModal({
+      isOpen: true,
+      title: "Export Success",
+      message: `Exported ${winners.length} winners to Excel`,
+      type: "success",
+      confirmText: "OK",
+      onConfirm: closeModal,
+    })
   }
 
   const handleAddPlayer = () => {
@@ -146,12 +180,29 @@ export default function ControlPanel() {
   }
 
   const handleAddPrize = () => {
-    if (!prizeName || !prizeImage) return
+    if (!prizeName.trim()) {
+      showModal({
+        isOpen: true,
+        title: "Invalid Input",
+        message: "Please enter a prize name",
+        type: "error",
+        confirmText: "OK",
+        onConfirm: closeModal,
+      })
+      return
+    }
     const quantity = Number.parseInt(prizeQuantity) || 1
-    addPrize(prizeName, prizeImage, quantity)
+    addPrize(prizeName, "🎁", quantity)
     setPrizeName("")
-    setPrizeImage("")
     setPrizeQuantity("1")
+    showModal({
+      isOpen: true,
+      title: "Prize Added",
+      message: `Added ${prizeName} (x${quantity}) to prize pool`,
+      type: "success",
+      confirmText: "OK",
+      onConfirm: closeModal,
+    })
   }
 
   const tabButtonClass = (tab: string) =>
@@ -237,12 +288,7 @@ export default function ControlPanel() {
                   placeholder="Prize name"
                   value={prizeName}
                   onChange={(e) => setPrizeName(e.target.value)}
-                />
-                <input
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none transition"
-                  placeholder="Image URL"
-                  value={prizeImage}
-                  onChange={(e) => setPrizeImage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleAddPrize()}
                 />
                 <input
                   className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none transition"
@@ -250,6 +296,7 @@ export default function ControlPanel() {
                   placeholder="Quantity"
                   value={prizeQuantity}
                   onChange={(e) => setPrizeQuantity(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleAddPrize()}
                   min="1"
                 />
                 <button
@@ -273,7 +320,6 @@ export default function ControlPanel() {
                               {prize.quantity}/{prize.totalQuantity}
                             </div>
                           </div>
-                          <div className="text-slate-400 text-xs mt-1">Image: {prize.image.slice(0, 25)}...</div>
                         </div>
                       ))}
                     </div>

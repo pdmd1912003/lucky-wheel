@@ -37,7 +37,7 @@ export default function LuckyWheel({ segments = [], onFinished }: LuckyWheelProp
 
   const { decreasePrizeQuantity, addWinner, prizes, removePlayer, players } = usePlayerStore()
 
-  const size = 500
+  const size = 600
   const centerX = size / 2
   const centerY = size / 2
   const radius = size / 2 - 20
@@ -90,14 +90,14 @@ export default function LuckyWheel({ segments = [], onFinished }: LuckyWheelProp
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       ctx.fillStyle = "#0f172a"
-      ctx.font = "900 14px 'Orbitron', sans-serif"
+      ctx.font = "900 16px 'Orbitron', sans-serif"
 
       ctx.shadowColor = "rgba(255,255,255,0.5)"
       ctx.shadowBlur = 0
 
       let text = segment || ""
-      if (text.length > 18) {
-        text = text.substring(0, 15) + "..."
+      if (text.length > 20) {
+        text = text.substring(0, 17) + "..."
       }
 
       ctx.fillText(text.toUpperCase(), 0, 0)
@@ -121,16 +121,21 @@ export default function LuckyWheel({ segments = [], onFinished }: LuckyWheelProp
     if (isSpinning || safeSegments.length === 0) return
 
     setIsSpinning(true)
-    const spinAngle = 360 * 5 + Math.floor(Math.random() * 360)
+    const spinAngle = 360 * 8 + Math.floor(Math.random() * 360) // Increased spins from 5 to 8
     const targetRotation = currentRotation + spinAngle
-    const duration = 5000
+    const duration = 8000 // Increased from 5000ms to 8000ms (8 seconds)
     const startTime = performance.now()
 
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime
       if (elapsed < duration) {
         const t = elapsed / duration
-        const easeOut = 1 - Math.pow(1 - t, 4)
+        // Custom easing: fast start, very slow dramatic end
+        // Combines cubic ease-out with quintic for extra slowdown at the end
+        const easeOut = t < 0.7 
+          ? 1 - Math.pow(1 - t / 0.7, 3) * 0.95  // Fast initial phase (70% of time)
+          : 0.95 + (1 - Math.pow(1 - (t - 0.7) / 0.3, 5)) * 0.05  // Very slow dramatic ending (30% of time)
+        
         const currentAngle = currentRotation + spinAngle * easeOut
         setCurrentRotation(currentAngle)
         requestAnimationFrame(animate)

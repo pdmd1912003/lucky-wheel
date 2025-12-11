@@ -87,13 +87,20 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   },
 
   addWinner: (player, prizeName) => {
-    const newWinner: Winner = {
-      ...player,
-      prize: prizeName,
-    }
-    set((state) => ({
-      winners: [...state.winners, newWinner],
-    }))
+    set((state) => {
+      // Generate unique ID for winner using timestamp and random number
+      const uniqueId = `winner_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+      
+      const newWinner: Winner = {
+        ...player,
+        id: uniqueId,
+        prize: prizeName,
+      }
+      
+      return {
+        winners: [...state.winners, newWinner],
+      }
+    })
   },
 
   clearWinners: () => set({ winners: [] }),
