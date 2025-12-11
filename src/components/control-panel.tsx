@@ -9,7 +9,7 @@ import { Upload, Download, Settings, Trash2 } from "lucide-react"
 import ConfirmModal from "./confirm-modal"
 
 export default function ControlPanel() {
-  const { players, setPlayers, prizes, addPrize, winners, clearWinners, addPlayer, removePlayer } = usePlayerStore()
+  const { players, setPlayers, prizes, addPrize, removePrize, winners, clearWinners, addPlayer, removePlayer } = usePlayerStore()
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState<"participants" | "prizes" | "import" | "stats">("participants")
@@ -213,7 +213,7 @@ export default function ControlPanel() {
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {isExpanded && (
-        <div className="mb-4 bg-slate-900 border border-purple-500 rounded-lg backdrop-blur-sm shadow-lg shadow-purple-500/20 w-96 animate-in fade-in slide-in-from-bottom-4 max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="absolute bottom-20 right-0 bg-slate-900 border border-purple-500 rounded-lg backdrop-blur-sm shadow-lg shadow-purple-500/20 w-96 animate-in fade-in slide-in-from-bottom-4 max-h-[calc(90vh-6rem)] overflow-hidden flex flex-col">
           <div className="flex gap-1 border-b border-slate-700 bg-slate-800/50 px-4 pt-3 flex-shrink-0">
             <button onClick={() => setActiveTab("participants")} className={tabButtonClass("participants")}>
               Participants
@@ -313,12 +313,20 @@ export default function ControlPanel() {
                     </h3>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {prizes.map((prize, idx) => (
-                        <div key={idx} className="bg-slate-800 p-2 rounded text-xs">
+                        <div key={idx} className="bg-slate-800 p-2 rounded text-xs group">
                           <div className="flex justify-between items-center">
-                            <div className="text-cyan-400 font-semibold">{prize.name}</div>
-                            <div className="text-purple-400 text-xs">
-                              {prize.quantity}/{prize.totalQuantity}
+                            <div className="flex-1">
+                              <div className="text-cyan-400 font-semibold">{prize.name}</div>
+                              <div className="text-purple-400 text-xs mt-1">
+                                {prize.quantity}/{prize.totalQuantity}
+                              </div>
                             </div>
+                            <button
+                              onClick={() => removePrize(prize.id)}
+                              className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition ml-2"
+                            >
+                              <Trash2 size={14} />
+                            </button>
                           </div>
                         </div>
                       ))}

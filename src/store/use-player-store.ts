@@ -33,6 +33,7 @@ interface PlayerStore {
   addPlayer: (name: string, studentId?: string) => void
   removePlayer: (id: string) => void
   addPrize: (name: string, image: string, quantity: number) => void
+  removePrize: (id: string) => void
   decreasePrizeQuantity: (id: string) => void
   addWinner: (player: Player, prizeName: string) => void
   clearWinners: () => void
@@ -66,15 +67,42 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   },
 
   addPrize: (name, image, quantity) => {
-    const newPrize: Prize = {
-      id: Date.now().toString(),
-      name,
-      image,
-      quantity,
-      totalQuantity: quantity,
-    }
+    set((state) => {
+      // Check if prize with same name already exists
+      const existingPrize = state.prizes.find((p) => p.name.toLowerCase() === name.toLowerCase())
+      
+      if (existingPrize) {
+        // If exists, increase quantity
+        return {
+          prizes: state.prizes.map((p) =>
+            p.id === existingPrize.id
+              ? {
+                  ...p,
+                  quantity: p.quantity + quantity,
+                  totalQuantity: p.totalQuantity + quantity,
+                }
+              : p
+          ),
+        }
+      } else {
+        // If not exists, add new prize
+        const newPrize: Prize = {
+          id: Date.now().toString(),
+          name,
+          image,
+          quantity,
+          totalQuantity: quantity,
+        }
+        return {
+          prizes: [...state.prizes, newPrize],
+        }
+      }
+    })
+  },
+
+  removePrize: (id) => {
     set((state) => ({
-      prizes: [...state.prizes, newPrize],
+      prizes: state.prizes.filter((p) => p.id !== id),
     }))
   },
 
