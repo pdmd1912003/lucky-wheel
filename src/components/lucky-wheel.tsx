@@ -121,21 +121,16 @@ export default function LuckyWheel({ segments = [], onFinished }: LuckyWheelProp
     if (isSpinning || safeSegments.length === 0) return
 
     setIsSpinning(true)
-    const spinAngle = 360 * 8 + Math.floor(Math.random() * 360) // Increased spins from 5 to 8
+    const spinAngle = 360 * 5 + Math.floor(Math.random() * 360)
     const targetRotation = currentRotation + spinAngle
-    const duration = 8000 // Increased from 5000ms to 8000ms (8 seconds)
+    const duration = 5000
     const startTime = performance.now()
 
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime
       if (elapsed < duration) {
         const t = elapsed / duration
-        // Custom easing: fast start, very slow dramatic end
-        // Combines cubic ease-out with quintic for extra slowdown at the end
-        const easeOut = t < 0.7 
-          ? 1 - Math.pow(1 - t / 0.7, 3) * 0.95  // Fast initial phase (70% of time)
-          : 0.95 + (1 - Math.pow(1 - (t - 0.7) / 0.3, 5)) * 0.05  // Very slow dramatic ending (30% of time)
-        
+        const easeOut = 1 - Math.pow(1 - t, 4)
         const currentAngle = currentRotation + spinAngle * easeOut
         setCurrentRotation(currentAngle)
         requestAnimationFrame(animate)
